@@ -34,50 +34,34 @@ import android.security.KeyPairGeneratorSpec;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
-import java.security.UnrecoverableEntryException;
-import java.security.cert.CertificateException;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Calendar;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
-import javax.crypto.NoSuchPaddingException;
 import javax.security.auth.x500.X500Principal;
-
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.os.Build;
-import android.security.KeyPairGeneratorSpec;
-import android.security.keystore.KeyGenParameterSpec;
-import android.security.keystore.KeyProperties;
-
-import org.jetbrains.annotations.NotNull;
 
 public class SecureStringStorage {
     private final static String TAG = "SecureStringStorage";
 
     private static String getEncryptedDataFilePath(@NotNull Context context, @NotNull String alias) {
+
         String filesDirectory = context.getFilesDir().getAbsolutePath();
         return filesDirectory + File.separator + alias;
     }
 
-    private static void createKeyPairIfNeeded(@NotNull Context context, @NotNull String alias)
-            throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, NoSuchProviderException, InvalidAlgorithmParameterException {
+    private static void createKeyPairIfNeeded(@NotNull Context context, @NotNull String alias) throws Exception {
 
         KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
         keyStore.load(null);
@@ -117,8 +101,7 @@ public class SecureStringStorage {
         }
     }
 
-    private static void deleteKeyPair(@NotNull Context context, @NotNull String alias)
-            throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
+    private static void deleteKeyPair(@NotNull Context context, @NotNull String alias) throws Exception {
 
         KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
         keyStore.load(null);
@@ -128,18 +111,17 @@ public class SecureStringStorage {
 
     private static void deleteFile(@NotNull Context context, @NotNull String alias) {
 
+        File file = new File(getEncryptedDataFilePath(context, alias));
+        file.delete();
     }
 
-    public static void deleteStringFromSecureStorage(@NotNull Context context, @NotNull String alias)
-            throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+    public static void deleteStringFromSecureStorage(@NotNull Context context, @NotNull String alias) throws Exception {
 
         deleteKeyPair(context, alias);
         deleteFile(context, alias);
     }
 
-    public static void saveStringToSecureStorage(@NotNull Context context, @NotNull String alias, String string)
-            throws CertificateException, NoSuchAlgorithmException, KeyStoreException, NoSuchProviderException, InvalidAlgorithmParameterException,
-            IOException, UnrecoverableEntryException, NoSuchPaddingException, InvalidKeyException {
+    public static void saveStringToSecureStorage(@NotNull Context context, @NotNull String alias, String string) throws Exception {
 
         if (string == null || string.isEmpty()) {
             // TODO: Delete? Or do nothing?
@@ -165,9 +147,7 @@ public class SecureStringStorage {
         cipherOutputStream.close();
     }
 
-    public static String loadStringFromSecureStorage(@NotNull Context context, @NotNull String alias)
-            throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException,
-            UnrecoverableEntryException, NoSuchProviderException, NoSuchPaddingException, InvalidKeyException {
+    public static String loadStringFromSecureStorage(@NotNull Context context, @NotNull String alias) throws Exception {
 
         KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
         keyStore.load(null);
