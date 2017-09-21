@@ -127,6 +127,14 @@ public class SecureStringStorage {
         }
     }
 
+    /**
+     * Deletes the encrypted string from the file system and removes the encryption key from the keystore.
+     * @param context The application context.
+     * @param alias The alias under which the key is stored and the filename under which the encrypted string is stored.
+     *              Try and make this string unique so as to not step on other files/keys in your app's file system/keystore.
+     * @return `true` if deletion is successful, `false` if deletion failed or if the key/file does not exist.
+     * @throws Exception
+     */
     public static boolean deleteStringFromSecureStorage(@NotNull Context context, @NotNull String alias) throws Exception {
         checkArgs(context, alias, "");
 
@@ -143,6 +151,17 @@ public class SecureStringStorage {
         return file.delete();
     }
 
+    // TODO: Doesn't work w RSA. Can pre-23 do AES, though? https://stackoverflow.com/a/10007285/955856
+
+    /**
+     * Generates a keypair, and uses it to encrypt the string. Saves the encrypted string to the file system.
+     * @param context The application context.
+     * @param alias The alias under which the key is stored and the filename under which the encrypted string is stored.
+     *              Try and make this string unique so as to not step on other files/keys in your app's file system/keystore.
+     * @param string The string to be encrypted. Because library supports pre-API-23, encryption keys use RSA, which limits
+     *               the size of the string to, like, 245 characters or something. Long strings won't work.
+     * @throws Exception
+     */
     public static void saveStringToSecureStorage(@NotNull Context context, @NotNull String alias, @NotNull String string) throws Exception {
         checkArgs(context, alias, string);
 
@@ -164,6 +183,14 @@ public class SecureStringStorage {
         cipherOutputStream.close();
     }
 
+    /**
+     * Loads and decrypts the encrypted string from the file system.
+     * @param context The application context.
+     * @param alias The alias under which the key is stored and the filename under which the encrypted string is stored.
+     *              Try and make this string unique so as to not step on other files/keys in your app's file system/keystore.
+     * @return The decrypted string. If the key/file doesn't exist, returns `null`.
+     * @throws Exception
+     */
     public static String loadStringFromSecureStorage(@NotNull Context context, @NotNull String alias) throws Exception {
         checkArgs(context, alias, "");
 
