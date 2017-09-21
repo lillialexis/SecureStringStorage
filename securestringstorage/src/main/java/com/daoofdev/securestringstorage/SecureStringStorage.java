@@ -55,10 +55,36 @@ import javax.security.auth.x500.X500Principal;
 public class SecureStringStorage {
     private final static String TAG = "SecureStringStorage";
 
-    private static String getEncryptedDataFilePath(@NotNull Context context, @NotNull String alias) {
+    private final static String SECURE_STRING_STORAGE_DIRECTORY = "com.dod.sss";
 
+    private static String getEncryptedDataFilePath(@NotNull Context context, @NotNull String alias) throws Exception {
         String filesDirectory = context.getFilesDir().getAbsolutePath();
-        return filesDirectory + File.separator + alias;
+        File   sssDirectory   = new File(filesDirectory + File.separator + SECURE_STRING_STORAGE_DIRECTORY);
+
+        boolean success = true;
+        if (!sssDirectory.exists()) {
+            success = sssDirectory.mkdir();
+        }
+
+        if (!success) {
+            throw new Exception("Error creating secure string storage directory.");
+        }
+
+        return filesDirectory + File.separator + SECURE_STRING_STORAGE_DIRECTORY + File.separator + alias;
+    }
+
+    private static void checkArgs(Context context, String alias, String string) throws Exception {
+        if (context == null) {
+           throw new IllegalArgumentException("Method parameter 'context' cannot be null.");
+         }
+
+        if (alias == null) {
+           throw new IllegalArgumentException("Method parameter 'alias' cannot be null.");
+         }
+
+        if (string == null) {
+           throw new IllegalArgumentException("Method parameter 'string' cannot be null.");
+         }
     }
 
     private static void createKeyPairIfNeeded(@NotNull Context context, @NotNull String alias) throws Exception {
@@ -101,33 +127,24 @@ public class SecureStringStorage {
         }
     }
 
-    private static void deleteKeyPair(@NotNull Context context, @NotNull String alias) throws Exception {
+    public static boolean deleteStringFromSecureStorage(@NotNull Context context, @NotNull String alias) throws Exception {
+        checkArgs(context, alias, "");
 
         KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
         keyStore.load(null);
 
-        keyStore.deleteEntry(alias);
-    }
+        if (!keyStore.containsAlias(alias) || !new File(getEncryptedDataFilePath(context, alias)).exists()) {
+            return false;
+        }
 
-    private static void deleteFile(@NotNull Context context, @NotNull String alias) {
+        keyStore.deleteEntry(alias);
 
         File file = new File(getEncryptedDataFilePath(context, alias));
-        file.delete();
+        return file.delete();
     }
 
-    public static void deleteStringFromSecureStorage(@NotNull Context context, @NotNull String alias) throws Exception {
-
-        deleteKeyPair(context, alias);
-        deleteFile(context, alias);
-    }
-
-    public static void saveStringToSecureStorage(@NotNull Context context, @NotNull String alias, String string) throws Exception {
-
-        if (string == null || string.isEmpty()) {
-            // TODO: Delete? Or do nothing?
-
-            return;
-        }
+    public static void saveStringToSecureStorage(@NotNull Context context, @NotNull String alias, @NotNull String string) throws Exception {
+        checkArgs(context, alias, string);
 
         createKeyPairIfNeeded(context, alias);
 
@@ -148,13 +165,12 @@ public class SecureStringStorage {
     }
 
     public static String loadStringFromSecureStorage(@NotNull Context context, @NotNull String alias) throws Exception {
+        checkArgs(context, alias, "");
 
         KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
         keyStore.load(null);
 
         if (!keyStore.containsAlias(alias) || !new File(getEncryptedDataFilePath(context, alias)).exists()) {
-            // TODO: Throw exception? Return null?
-
             return null;
         }
 
