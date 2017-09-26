@@ -1,3 +1,4 @@
 <resources>
+    <public />
     <string name="app_name">SecureStringStorage</string>
 </resources>
