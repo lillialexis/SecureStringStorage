@@ -173,7 +173,7 @@ public class SecureStringStorage {
         KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(alias, null);
         RSAPublicKey publicKey = (RSAPublicKey) privateKeyEntry.getCertificate().getPublicKey();
 
-        Cipher input = Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidOpenSSL");
+        Cipher input = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
         input.init(Cipher.ENCRYPT_MODE, publicKey);
 
         CipherOutputStream cipherOutputStream =
@@ -206,7 +206,7 @@ public class SecureStringStorage {
         PrivateKey privateKey = privateKeyEntry.getPrivateKey();
 
         @SuppressLint("GetInstance") /* https://stackoverflow.com/questions/36016288/cipher-with-ecb-mode-should-not-be-used */
-        Cipher output = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+        Cipher output = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
         output.init(Cipher.DECRYPT_MODE, privateKey);
 
         //KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(alias, null);
